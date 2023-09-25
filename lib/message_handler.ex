@@ -15,7 +15,6 @@ alias ChatServerBRB.State
     if current_round.echo_sent == false do
       current_round = %Rounds{current_round | echo_sent: true, value: message.value}
       state = put_in state.brb_messages[{message.initiator_pid, message.round_identifier}], current_round
-      #state = Map.put(state, :brb_messages, current_round)
       message = %Message{message | type: :echo, sender_pid: self()}
       {state, message}
     else
@@ -25,17 +24,32 @@ alias ChatServerBRB.State
 
   def handle_message(:echo, message, state) do
     IO.puts("On #{inspect(self())}, from #{inspect(message.sender_pid)}: Handling type 'echo' with : #{inspect(message.initiator_pid)}, #{inspect(message.round_identifier)}, #{inspect(message.value)}, #{inspect(state)}")
-      # TODO: Save echo message in map with (initiator, round identifier)
-      # TODO: Implement following logic:
-      # Check if equal more than echo 2f+1 messages with value v have already been received
-      # Yes:
-      # If echo_sent == false:
-      # Set value
-      # Echo broadcast
+    current_round = Map.get(state.brb_messages, {message.initiator_pid, message.round_identifier}, %Rounds{})
+    current_round = %Rounds{current_round | echos_received: [ message | current_round.echos_received]}
+    # UNSAFE: Check if the value is equal at all 2f+1 echos
+    if length(current_round.echos_received) >= 2 * state.num_byzantine_nodes + 1 do
+      {current_round, echo_message} = (
+        if current_round.echo_sent == false do
+          current_round = %Rounds{current_round | echo_sent: true, value: message.value}
+          echo_message = %Message{message | type: :echo, sender_pid: self()}
+          {current_round, echo_message}
+        else
+          {current_round, nil}
+        end
+      )
 
-      # Set ready_sent = true
-      # ready broadcast
-    {state, nil}
+      # TODO: Here are two messages sent, not only one -> ECHO IS FOR NOW IGNORED, SINCE IT'S A CORNER CASE
+      if current_round.ready_sent == false do
+        current_round = %Rounds{current_round | ready_sent: true}
+        state = put_in state.brb_messages[{message.initiator_pid, message.round_identifier}], current_round
+        ready_message = %Message{message | type: :ready, sender_pid: self()}
+        {state, ready_message}
+      else
+        {state, nil}
+      end
+    else
+      {state, nil}
+    end
   end
 
   def handle_message(:ready, message, state) do

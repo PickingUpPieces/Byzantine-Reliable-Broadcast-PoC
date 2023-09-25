@@ -86,7 +86,8 @@ defmodule ChatServerBRB do
   def start(name) do
     if Enum.member?(nodenames(), name) do
       state = %State{
-        num_nodes: length(nodenames())
+        num_nodes: length(nodenames()),
+        num_byzantine_nodes: 0
       }
 
       pid = spawn(__MODULE__, :loop_brb, [state])
