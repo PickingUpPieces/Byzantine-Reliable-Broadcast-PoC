@@ -17,13 +17,6 @@ defmodule ChatServerBRB do
 
   def nodenames, do: @nodenames
 
-  defmodule Rounds do
-    defstruct value: nil, value_accepted: false, echo_sent: false, ready_sent: false, echos_received: [], readies_received: []
-  end
-
-  defmodule State do
-    defstruct num_nodes: 0, num_byzantine_nodes: 0, round_identifier: 0, delivered_msg: [], brb_messages: %{}
-  end
   # state: map containing:
   #   num_nodes: Number of nodes
   #   num_byzantine_nodes: Amount of maximum possible f

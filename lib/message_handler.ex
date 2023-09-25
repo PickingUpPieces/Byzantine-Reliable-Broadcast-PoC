@@ -2,19 +2,21 @@ defmodule MessageHandler do
   @moduledoc """
   Documentation for `MessageHandler` which handels incoming messages.
   """
+alias ChatServerBRB.State
 
+
+  @spec handle_message(any, Message, State) :: {State, nil | Message}
   def handle_message(:initial, message, state) do
     IO.puts("On #{inspect(self())}, from #{inspect(message.sender_pid)}: Handling type 'initial' with : #{inspect(message.initiator_pid)}, #{inspect(message.round_identifier)}, #{inspect(message.value)}, #{inspect(state)}")
-    current_round = Map.get(Map.get(state, :brb_messages, %{}), {message.initiator_pid, message.round_identifier}, %{})
-    echo_sent = Map.get(current_round, :echo_sent, false)
+    current_round = Map.get(state.brb_messages, {message.initiator_pid, message.round_identifier}, %Rounds{})
 
     # Set echo_sent = true; Set value = value
     # It could be that the node already received enough echos from other nodes to sent its own echo message
-    if echo_sent == false do
-      current_round = Map.put(current_round, :echo_sent, true)
-      current_round = Map.put(current_round, :value, message.value)
-      state = Map.put(state, :brb_messages, current_round)
-      message = %{message | type: :echo, sender_pid: self()}
+    if current_round.echo_sent == false do
+      current_round = %Rounds{current_round | echo_sent: true, value: message.value}
+      state = put_in state.brb_messages[{message.initiator_pid, message.round_identifier}], current_round
+      #state = Map.put(state, :brb_messages, current_round)
+      message = %Message{message | type: :echo, sender_pid: self()}
       {state, message}
     else
       {state, nil}
@@ -54,7 +56,7 @@ defmodule MessageHandler do
     {state, nil}
   end
 
-  def handle_message({_message_type, _initiator_pid, _sender_pid, _round_identifier, _value}, state) do
+  def handle_message(_message_type, _message, state) do
     IO.puts("Unknown message type received. Ignoring...")
     {state, nil}
   end
