@@ -17,19 +17,6 @@ defmodule ChatServerBRB do
 
   def nodenames, do: @nodenames
 
-  # state: map containing:
-  #   num_nodes: Number of nodes
-  #   num_byzantine_nodes: Amount of maximum possible f
-  #   round_identifier: Round identifier
-  #   delivered_msg: list of delivered messages
-  #   brb_messages:  map with key {initiator_pid, round}
-  #     value: broadcasted value
-  #     value_accepted: true/false
-  #     echo_sent: true/false
-  #     ready_sent: true/false
-  #     echos_received: List of received echos
-  #     readies_received: List of received readies
-
 
   @spec loop_brb(State) :: :ok
   def loop_brb(state) do
