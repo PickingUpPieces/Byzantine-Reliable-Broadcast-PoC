@@ -13,7 +13,7 @@ defmodule ChatServerBRB do
 
   """
 
-  @nodenames [:elisa, :martin]
+  @nodenames [:elisa, :martin, :carlos, :kevin]
 
   def nodenames, do: @nodenames
 
@@ -74,7 +74,7 @@ defmodule ChatServerBRB do
     if Enum.member?(nodenames(), name) do
       state = %State{
         num_nodes: length(nodenames()),
-        num_byzantine_nodes: 0
+        num_byzantine_nodes: 1
       }
 
       pid = spawn(__MODULE__, :loop_brb, [state])
