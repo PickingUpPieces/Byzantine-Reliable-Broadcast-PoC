@@ -16,7 +16,8 @@ defmodule MessageHandler do
     # Create echo message, if not already sent
     {current_round, echo_message} = create_echo_message(current_round, message)
 
-    {false, put_in(state.brb_messages[{message.initiator_pid, message.round_identifier}], current_round),
+    {false,
+     put_in(state.brb_messages[{message.initiator_pid, message.round_identifier}], current_round),
      echo_message}
   end
 
@@ -43,7 +44,8 @@ defmodule MessageHandler do
       # Create ready message, if not already sent
       {current_round, ready_message} = create_ready_message(current_round, message)
 
-      {false, put_in(
+      {false,
+       put_in(
          state.brb_messages[{message.initiator_pid, message.round_identifier}],
          current_round
        ), echo_message ++ ready_message}
@@ -75,7 +77,8 @@ defmodule MessageHandler do
         if current_round.value_accepted == false do
           current_round = %Round{current_round | value_accepted: true}
 
-          {true, put_in(
+          {true,
+           put_in(
              state.brb_messages[{message.initiator_pid, message.round_identifier}],
              current_round
            ), []}
@@ -88,7 +91,8 @@ defmodule MessageHandler do
         # Create ready message, if not already sent
         {current_round, ready_message} = create_ready_message(current_round, message)
 
-        {false, put_in(
+        {false,
+         put_in(
            state.brb_messages[{message.initiator_pid, message.round_identifier}],
            current_round
          ), echo_message ++ ready_message}

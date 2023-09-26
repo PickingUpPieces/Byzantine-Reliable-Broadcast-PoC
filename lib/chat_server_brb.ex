@@ -43,7 +43,8 @@ defmodule ChatServerBRB do
         loop_brb(state)
 
       {:brb_deliver, message} ->
-        {value_accepted, state, messages} = MessageHandler.handle_message(message.type, message, state)
+        {value_accepted, state, messages} =
+          MessageHandler.handle_message(message.type, message, state)
 
         for msg <- messages do
           if !is_nil(msg) do
@@ -53,7 +54,12 @@ defmodule ChatServerBRB do
 
         if value_accepted do
           current_round =
-            Map.get(state.brb_messages, {message.initiator_pid, message.round_identifier}, %Round{})
+            Map.get(
+              state.brb_messages,
+              {message.initiator_pid, message.round_identifier},
+              %Round{}
+            )
+
           IO.puts(
             "On #{inspect(self())}: VALUE HAS BEEN ACCEPTED: #{inspect(message.value)} (Initiator, rID: #{inspect(message.initiator_pid)}, #{inspect(message.round_identifier)}) (Nodes: #{state.num_nodes}/#{state.num_byzantine_nodes}}) (Echo/ready: #{length(current_round.echos_received)}/#{length(current_round.readies_received)})"
           )
