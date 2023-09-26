@@ -6,7 +6,7 @@
   # state: map containing:
   #   num_nodes: Number of nodes
   #   num_byzantine_nodes: Amount of maximum possible f
-  #   round_identifier: Round identifier
+  #   round_identifier: Round identifier for node
   #   delivered_msg: list of delivered messages
   #   brb_messages:  map with key {initiator_pid, round}
   #     value: broadcasted value

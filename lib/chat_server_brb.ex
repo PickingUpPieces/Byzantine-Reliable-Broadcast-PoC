@@ -5,18 +5,11 @@ defmodule ChatServerBRB do
 
   @doc """
   Chat Server with Byzantine Reliable Broadcast (BRB) implementation.
-
-  ## Examples
-
-      iex> ChatServerBRB.brb_broadcast(:elisa, "Hello World!")
-      "Hello World!" TODO: Change return value
-
   """
 
   @nodenames [:elisa, :martin, :carlos, :kevin]
 
   def nodenames, do: @nodenames
-
 
   @spec loop_brb(State) :: :ok
   def loop_brb(state) do

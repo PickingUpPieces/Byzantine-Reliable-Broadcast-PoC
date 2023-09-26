@@ -1,28 +1,10 @@
-# dare23-project
-Project for the Summer School DARE2023.
+# Byzantine Reliable Broadcast (BRB) PoC Implementation
+This is a prototype/PoC implementation of the Byzantine Reliable Broadcast (BRB) as described in the paper [Asynchronous Byzantine Agreement Protocols](https://www.sciencedirect.com/science/article/pii/089054018790054X) by Gabriel Bracha.
+This was done for the Summer School [DARE2023](https://soft.vub.ac.be/dare23/).
+Some code was provided from organisers of the Summer School.
 
-## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `brb` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:brb, "~> 0.1.0"}
-  ]
-end
-```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/brb>.
-
-
-## Instructions to connect processes/nodes 
-Start the software with the following command: `iex --sname test1 --cookie secret -r reliable-broadcast.ex` 
-Connect the nodes with the following command: `Node.ping(:'test1@computer-name')`
-Check if the nodes are connected with the following command: `Node.list`
-Register process with names: `:global.register_name(:process_name, self())`
-Look up all registered names: `:global.registered_names`
-Send message to a process: `send(:process_name, hi)`
+## Execution
+The implementation is written in Elixir and can be compiled by running the following command in the root folder of the project: `mix compile`.
+One it is compiled, start the application by running: `iex -S mix`. This will start an interactive shell with the application loaded.
+To start a fixed number of nodes, run the following command in the interactive shell: `ChatServerBRB.start_all`.
+To send a broadcast message, you have to specify the sending node and the message. Run the following command in the interactive shell: `ChatServerBRB.brb_broadcast(:elisa, :hi)`
