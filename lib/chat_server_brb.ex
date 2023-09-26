@@ -27,13 +27,8 @@ defmodule ChatServerBRB do
           "On #{inspect(self())}, START NEW BROADCAST (#{inspect(self())}, #{state.round_identifier}) with value: #{value}"
         )
 
-        send(self(), {:rb_broadcast, message})
+        send(self(), {:beb_broadcast, message})
         loop_brb(%State{state | round_identifier: state.round_identifier + 1})
-
-      {:rb_broadcast, message} ->
-        mid = :erlang.unique_integer([:positive])
-        send(self(), {:beb_broadcast, {mid, message}})
-        loop_brb(state)
 
       {:beb_broadcast, message} ->
         Enum.each(nodenames(), fn n -> send(:global.whereis_name(n), {:ptp, self(), message}) end)
@@ -43,25 +38,25 @@ defmodule ChatServerBRB do
         send(self(), {:beb_deliver, from, message})
         loop_brb(state)
 
-      {:beb_deliver, from, {mid, message}} ->
-        if not Enum.member?(state.delivered_msg, mid) do
-          send(self(), {:rb_deliver, from, message})
-          loop_brb(%State{state | delivered_msg: [mid | state.delivered_msg]})
-        else
-          loop_brb(state)
-        end
-
-      {:rb_deliver, from, message} ->
-        send(self(), {:brb_deliver, from, message})
+      {:beb_deliver, _from, message} ->
+        send(self(), {:brb_deliver, message})
         loop_brb(state)
 
-      {:brb_deliver, _from, message} ->
-        {state, message} = MessageHandler.handle_message(message.type, message, state)
+      {:brb_deliver, message} ->
+        {value_accepted, state, messages} = MessageHandler.handle_message(message.type, message, state)
 
-        for msg <- message do
+        for msg <- messages do
           if !is_nil(msg) do
-            send(self(), {:rb_broadcast, msg})
+            send(self(), {:beb_broadcast, msg})
           end
+        end
+
+        if value_accepted do
+          current_round =
+            Map.get(state.brb_messages, {message.initiator_pid, message.round_identifier}, %Round{})
+          IO.puts(
+            "On #{inspect(self())}: VALUE HAS BEEN ACCEPTED: #{inspect(message.value)} (Initiator, rID: #{inspect(message.initiator_pid)}, #{inspect(message.round_identifier)}) (Nodes: #{state.num_nodes}/#{state.num_byzantine_nodes}}) (Echo/ready: #{length(current_round.echos_received)}/#{length(current_round.readies_received)})"
+          )
         end
 
         loop_brb(state)
