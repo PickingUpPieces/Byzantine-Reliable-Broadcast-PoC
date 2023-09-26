@@ -23,7 +23,7 @@ defmodule ChatServerBRB do
     receive do
       {:brb_broadcast, value} ->
         message = %Message{type: :initial, initiator_pid: self(), sender_pid: self(), round_identifier: state.round_identifier, value: value}
-        IO.puts("On #{inspect(self())}, broadcasts: initial, #{state.round_identifier}, #{value}")
+        IO.puts("On #{inspect(self())}, START NEW BROADCAST (#{inspect(self())}, #{state.round_identifier}) with value: #{value}")
 
         send(self(), {:rb_broadcast, message})
         loop_brb(%State{state | round_identifier: (state.round_identifier + 1)})
@@ -55,8 +55,10 @@ defmodule ChatServerBRB do
 
       {:brb_deliver, _from, message} ->
         {state, message} = MessageHandler.handle_message(message.type, message, state)
-        if !is_nil(message) do
-          send(self(), {:rb_broadcast, message})
+        for msg <- message do
+          if !is_nil(msg) do
+            send(self(), {:rb_broadcast, msg})
+          end
         end
         loop_brb(state)
 
