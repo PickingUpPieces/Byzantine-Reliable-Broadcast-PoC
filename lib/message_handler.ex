@@ -37,8 +37,8 @@ defmodule MessageHandler do
     state =
       put_in(state.brb_messages[{message.initiator_pid, message.round_identifier}], current_round)
 
-    # UNSAFE: Check if the value is equal for all (n+f)/2 echos
-    if length(current_round.echos_received) >= Float.ceil((state.num_nodes + state.num_byzantine_nodes) / 2) do
+    # Check if enough echo messages have been received yet
+    if count_messages_with_value(current_round.echos_received, message.value) >= Float.ceil((state.num_nodes + state.num_byzantine_nodes) / 2) do
       # Create echo message, if not already sent
       {current_round, echo_message} = create_echo_message(current_round, message)
       # Create ready message, if not already sent
@@ -70,10 +70,10 @@ defmodule MessageHandler do
     state =
       put_in(state.brb_messages[{message.initiator_pid, message.round_identifier}], current_round)
 
-    # UNSAFE: Check if the value is equal for all f+1 readies
-    if length(current_round.readies_received) >= state.num_byzantine_nodes + 1 do
-      # UNSAFE: Check if the value is equal for all 2f+1 echos
-      if length(current_round.readies_received) >= 2 * state.num_byzantine_nodes + 1 do
+    # Check if enough ready messages have been received yet
+    if count_messages_with_value(current_round.readies_received, message.value) >= state.num_byzantine_nodes + 1 do
+      # Check if enough ready messages have been received yet to accept the value
+      if count_messages_with_value(current_round.readies_received, message.value) >= 2 * state.num_byzantine_nodes + 1 do
         if current_round.value_accepted == false do
           current_round = %Round{current_round | value_accepted: true}
 
@@ -127,5 +127,16 @@ defmodule MessageHandler do
     else
       {round, []}
     end
+  end
+
+  # Function to count the number of messages with a specific value
+  @spec count_messages_with_value([Message], any) :: integer()
+  def count_messages_with_value(messages, value) do
+    Enum.reduce(messages, 0, fn message, count ->
+      case message.value do
+        ^value -> count + 1
+        _ -> count
+      end
+    end)
   end
 end
