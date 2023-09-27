@@ -37,8 +37,8 @@ defmodule MessageHandler do
     state =
       put_in(state.brb_messages[{message.initiator_pid, message.round_identifier}], current_round)
 
-    # UNSAFE: Check if the value is equal for all 2f+1 echos
-    if length(current_round.echos_received) >= 2 * state.num_byzantine_nodes + 1 do
+    # UNSAFE: Check if the value is equal for all (n+f)/2 echos
+    if length(current_round.echos_received) >= Float.ceil((state.num_nodes + state.num_byzantine_nodes) / 2) do
       # Create echo message, if not already sent
       {current_round, echo_message} = create_echo_message(current_round, message)
       # Create ready message, if not already sent
